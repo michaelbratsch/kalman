@@ -3,7 +3,7 @@
 import logging
 import math
 
-from kalman import LowSpeed2dSecondOrder
+from filter import LowSpeed2d, Position2d
 import numpy as np
 
 
@@ -14,31 +14,41 @@ def correlation(a, b):
     return math.sqrt(a * b)
 
 # INITIAL STATE
-x = np.array([0.0, 0.0, 0.0, 0.0])
+x1 = np.array([0.0, 0.0, 0.0, 0.0])
 
-sigma_x_P = 1.0
-sigma_y_P = 1.0
-sigma_x_y_P = -0.9 * correlation(sigma_x_P, sigma_y_P)
+sigma_xx_P = 1.0
+sigma_yy_P = 1.0
+sigma_xy_P = -0.0 * correlation(sigma_xx_P, sigma_yy_P)
 
-P = np.array([[sigma_x_P, sigma_x_y_P, 0.0, 0.0],
-              [sigma_x_y_P, sigma_y_P, 0.0, 0.0],
-              [0.0, 0.0, 1.0, 0.0],
-              [0.0, 0.0, 0.0, 1.0]])
+P1 = np.array([[sigma_xx_P, sigma_xy_P, 0.0, 0.0],
+               [sigma_xy_P, sigma_yy_P, 0.0, 0.0],
+               [0.0, 0.0, 1.0, 0.0],
+               [0.0, 0.0, 0.0, 1.0]])
 
-low_speed = LowSpeed2dSecondOrder(x=x, P=P)
+low_speed2d = LowSpeed2d(x=x1, P=P1)
 
 
-for i in range(1, 20):
-    # MEASUREMENT
-    z = np.array([i, 0])
+x2 = np.array([0.0, 0.0])
+P2 = np.array([[sigma_xx_P, sigma_xy_P],
+               [sigma_xy_P, sigma_yy_P]])
 
-    sigma_x_R = 10.0
-    sigma_y_R = 1.2
-    sigma_x_y_R = -0.9 * correlation(sigma_x_R, sigma_y_R)
+position2d = Position2d(x=x2, P=P2)
 
-    R = np.array([[sigma_x_R, sigma_x_y_R],
-                  [sigma_x_y_R, sigma_x_R]])
 
-    low_speed.filter(dt=1.0, z=z, R=R)
+for filter_2d in [low_speed2d, position2d]:
+    for i in range(1, 10):
+        # MEASUREMENT
+        z = np.array([i, 0])
 
-low_speed.plot()
+        sigma_xx_R = 1.0
+        sigma_yy_R = 1.0
+        sigma_xy_R = -0.9 * correlation(sigma_xx_R, sigma_yy_R)
+
+        R = np.array([[sigma_xx_R, sigma_xy_R],
+                      [sigma_xy_R, sigma_xx_R]])
+
+        filter_2d.filter(dt=1.0, z=z, R=R)
+
+low_speed2d.plot(212)
+position2d.plot(211)
+Position2d.show()

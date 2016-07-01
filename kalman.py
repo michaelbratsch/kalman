@@ -1,7 +1,5 @@
 import logging
-from operator import pos
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -11,6 +9,8 @@ log = logging.getLogger(__name__)
 class Kalman(object):
 
     def __init__(self, x, P):
+        super(Kalman, self).__init__()
+
         self.x = x
         self.P = P
 
@@ -51,60 +51,3 @@ class Kalman(object):
     def print_state_and_covariance(self, name):
         log.debug("%s x: %s" % (name, self.x))
         log.debug("P: \n%s" % self.P)
-
-
-class Plot2dMixin(object):
-
-    # plot initial state
-    positions = []
-    speeds = []
-    measurements = []
-
-    def update_plotter(self, measurement=None):
-        self.positions.append(self.get_position())
-        self.speeds.append(self.get_speed())
-        if measurement is not None:
-            self.measurements.append(measurement)
-
-    def plot(self):
-        fig = plt.figure()
-        axes = fig.add_subplot(111)
-
-        x, y = zip(*self.positions)
-        axes.plot(x, y, marker='o')
-
-        x, y = zip(*self.measurements)
-        axes.plot(x, y, 'ro')
-
-        for pos, speed in zip(self.positions, self.speeds):
-            if speed:
-                x, y = pos
-                dx, dy = speed
-                axes.plot([x, x + dx], [y, y + dy], color='red')
-
-        plt.show()
-
-
-class LowSpeed2dSecondOrder(Kalman, Plot2dMixin):
-
-    def get_position(self):
-        return self.x[0], self.x[1]
-
-    def get_speed(self):
-        return self.x[2], self.x[3]
-
-    def F(self, dt):
-        return np.array([[1.0, 0.0, dt, 0.0],
-                         [0.0, 1.0, 0.0, dt],
-                         [0.0, 0.0, 1.0, 0.0],
-                         [0.0, 0.0, 0.0, 1.0]])
-
-    def H(self, dt):
-        return np.array([[1.0, 0.0, 0.0, 0.0],
-                         [0.0, 1.0, 0.0, 0.0]])
-
-    def Q(self, dt):
-        return np.array([[1.0, 0.0, 0.0, 0.0],
-                         [0.0, 1.0, 0.0, 0.0],
-                         [0.0, 0.0, 1.0, 0.0],
-                         [0.0, 0.0, 0.0, 1.0]])
