@@ -22,7 +22,7 @@ class State1Mearsurement1_2d(Kalman, Plot2dMixin):
         return np.identity(2)
 
     def Q(self, dt):
-        return np.identity(2)
+        return self.plant_noise * np.identity(2)
 
 
 class State2Measurement1_2d(Kalman, Plot2dMixin):
@@ -47,7 +47,12 @@ class State2Measurement1_2d(Kalman, Plot2dMixin):
         return np.eye(N=2, M=4)
 
     def Q(self, dt):
-        return np.identity(4)
+        t_3 = 1.0 / 3.0 * dt**3
+        t_2 = 0.5 * dt**2
+        return self.plant_noise * np.array([[t_3, 0.0, t_2, 0.0],
+                                            [0.0, t_3, 0.0, t_2],
+                                            [t_3, 0.0, dt,  0.0],
+                                            [0.0, t_3, 0.0, dt]])
 
 
 class State3Measurement1_2d(Kalman, Plot2dMixin):
@@ -75,7 +80,16 @@ class State3Measurement1_2d(Kalman, Plot2dMixin):
         return np.eye(N=2, M=6)
 
     def Q(self, dt):
-        return np.identity(6)
+        t_5 = 0.05 * dt**5
+        t_4 = 0.125 * dt**4
+        t_3 = 1.0 / 3.0 * dt**3
+        t_2 = 0.5 * dt**2
+        return self.plant_noise * np.array([[t_5, 0.0, t_4, 0.0, t_3, 0.0],
+                                            [0.0, t_5, 0.0, t_4, 0.0, t_3],
+                                            [t_4, 0.0, t_3, 0.0, t_2, 0.0],
+                                            [0.0, t_4, 0.0, t_3, 0.0, t_2],
+                                            [t_3, 0.0, t_2, 0.0, dt,  0.0],
+                                            [0.0, t_3, 0.0, t_2, 0.0, dt]])
 
 
 class State4Measurement1_2d(Kalman, Plot2dMixin):
@@ -106,4 +120,4 @@ class State4Measurement1_2d(Kalman, Plot2dMixin):
         return np.eye(N=2, M=8)
 
     def Q(self, dt):
-        return np.identity(8)
+        return self.plant_noise * np.identity(8)

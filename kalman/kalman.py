@@ -8,11 +8,12 @@ log = logging.getLogger(__name__)
 
 class Kalman(object):
 
-    def __init__(self, x, P):
+    def __init__(self, x, P, plant_noise):
         super(Kalman, self).__init__()
 
         self.x = x
         self.P = P
+        self.plant_noise = plant_noise
 
         self.print_state_and_covariance("State initial")
 
