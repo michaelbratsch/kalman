@@ -20,7 +20,7 @@ s_xx = 1.0
 s_yy = 1.0
 s_xy = -0.0 * correlation(s_xx, s_yy)
 
-plant_noise = 0.0
+plant_noise = 1.0
 
 x1 = np.zeros(2)
 P1 = np.array([[s_xx, s_xy],
@@ -78,7 +78,7 @@ def generate_measurements(n):
 
         yield z, R
 
-for z, R in generate_measurements(60):
+for z, R in generate_measurements(80):
     for filter_2d in [position2d, low_speed2d, acceleration2d, jerk2d]:
         filter_2d.filter(dt=1.0, z=z, R=R)
 

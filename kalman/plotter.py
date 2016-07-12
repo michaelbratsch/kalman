@@ -18,12 +18,11 @@ def create_ellipse(pos, cov):
     return Ellipse(xy=pos, width=width, height=height, angle=theta,
                    color='green', fill=False)
 
-all_axes = []
-
 
 class Plot2dMixin(object):
 
     fig = plt.figure()
+    all_axes = []
 
     def __init__(self):
         # plot initial state
@@ -62,15 +61,15 @@ class Plot2dMixin(object):
         axes.set_aspect('equal')
         axes.autoscale()
 
-        all_axes.append(axes)
+        self.all_axes.append(axes)
 
-    @staticmethod
-    def show():
-        x_0 = min(axe.get_xlim()[0] for axe in all_axes)
-        x_1 = max(axe.get_xlim()[1] for axe in all_axes)
-        y_0 = min(axe.get_ylim()[0] for axe in all_axes)
-        y_1 = max(axe.get_ylim()[1] for axe in all_axes)
-        for axe in all_axes:
+    @classmethod
+    def show(cls):
+        x_0 = min(axe.get_xlim()[0] for axe in cls.all_axes)
+        x_1 = max(axe.get_xlim()[1] for axe in cls.all_axes)
+        y_0 = min(axe.get_ylim()[0] for axe in cls.all_axes)
+        y_1 = max(axe.get_ylim()[1] for axe in cls.all_axes)
+        for axe in cls.all_axes:
             axe.set_xlim((x_0, x_1))
             axe.set_ylim((y_0, y_1))
         plt.show()

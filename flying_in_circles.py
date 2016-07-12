@@ -24,7 +24,7 @@ position2d = State1Mearsurement1_2d(x=x1, P=P1, plant_noise=1.0)
 
 x2 = np.zeros(4)
 P2 = np.identity(4)
-low_speed2d = State2Measurement1_2d(x=x2, P=P2, plant_noise=0.01)
+low_speed2d = State2Measurement1_2d(x=x2, P=P2, plant_noise=0.05)
 
 
 x3 = np.zeros(6)
@@ -48,7 +48,7 @@ def generate_measurements(n):
         z = np.array([x, y])
 
         s_xx_R = 10.0
-        s_yy_R = 1.0
+        s_yy_R = 10.0
         s_xy_R = -0.0 * correlation(s_xx_R, s_yy_R)
 
         R = np.array([[s_xx_R, s_xy_R],

@@ -51,8 +51,8 @@ class State2Measurement1_2d(Kalman, Plot2dMixin):
         t_2 = 0.5 * dt**2
         return self.plant_noise * np.array([[t_3, 0.0, t_2, 0.0],
                                             [0.0, t_3, 0.0, t_2],
-                                            [t_3, 0.0, dt,  0.0],
-                                            [0.0, t_3, 0.0, dt]])
+                                            [t_2, 0.0, dt,  0.0],
+                                            [0.0, t_2, 0.0, dt]])
 
 
 class State3Measurement1_2d(Kalman, Plot2dMixin):
