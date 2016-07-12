@@ -5,6 +5,10 @@ from plotter import Plot2dMixin
 
 class State1Mearsurement1_2d(Kalman, Plot2dMixin):
 
+    def initialize_state(self, z, R):
+        self.x = z
+        self.P = R
+
     def get_position(self):
         return self.x[0], self.x[1]
 
@@ -26,6 +30,12 @@ class State1Mearsurement1_2d(Kalman, Plot2dMixin):
 
 
 class State2Measurement1_2d(Kalman, Plot2dMixin):
+
+    def initialize_state(self, z, R):
+        self.x = np.zeros(4)
+        self.x[0:2] = z
+        self.P = np.identity(4)
+        self.P[0:2, 0:2] = R
 
     def get_position(self):
         return self.x[0], self.x[1]
@@ -56,6 +66,12 @@ class State2Measurement1_2d(Kalman, Plot2dMixin):
 
 
 class State3Measurement1_2d(Kalman, Plot2dMixin):
+
+    def initialize_state(self, z, R):
+        self.x = np.zeros(6)
+        self.x[0:2] = z
+        self.P = np.identity(6)
+        self.P[0:2, 0:2] = R
 
     def get_position(self):
         return self.x[0], self.x[1]
@@ -93,6 +109,12 @@ class State3Measurement1_2d(Kalman, Plot2dMixin):
 
 
 class State4Measurement1_2d(Kalman, Plot2dMixin):
+
+    def initialize_state(self, z, R):
+        self.x = np.zeros(8)
+        self.x[0:2] = z
+        self.P = np.identity(8)
+        self.P[0:2, 0:2] = R
 
     def get_position(self):
         return self.x[0], self.x[1]

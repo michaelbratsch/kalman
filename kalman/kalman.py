@@ -8,16 +8,15 @@ log = logging.getLogger(__name__)
 
 class Kalman(object):
 
-    def __init__(self, x, P, plant_noise):
+    def __init__(self, plant_noise):
+        # needs to be called to make MixIns work
         super(Kalman, self).__init__()
 
-        self.x = x
-        self.P = P
+        # will be initialized on first measurement
+        self.x = None
+        self.P = None
+
         self.plant_noise = plant_noise
-
-        self.print_state_and_covariance("State initial")
-
-        self.update_plotter()
 
     def FT(self, dt):
         return np.transpose(self.F(dt))
@@ -26,10 +25,19 @@ class Kalman(object):
         return np.transpose(self.H(dt))
 
     def filter(self, dt, z, R):
-
         log.debug("Filter input dt: %s, z: %s" % (dt, z))
-        # self.print_state_and_covariance("State before")
 
+        if self.x is None:
+            self.initialize_state(z, R)
+            info_text = "State initial"
+        else:
+            self._filter(dt, z, R)
+            info_text = "State after"
+
+        self.print_state_and_covariance(info_text)
+        self.update_plotter(z)
+
+    def _filter(self, dt, z, R):
         # PREDICT
         xhatminus = np.dot(self.F(dt), self.x)
         Pminus = np.dot(np.dot(self.F(dt), self.P), self.FT(dt)) + self.Q(dt)
@@ -45,9 +53,6 @@ class Kalman(object):
         self.x = xhatminus + np.dot(KalmanGain, ytilde)
         self.P = np.dot(
             np.identity(len(self.x)) - np.dot(KalmanGain, self.H(dt)), Pminus)
-
-        self.update_plotter(z)
-        self.print_state_and_covariance("State after")
 
     def print_state_and_covariance(self, name):
         log.debug("%s x: %s" % (name, self.x))
