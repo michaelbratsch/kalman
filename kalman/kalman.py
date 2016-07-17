@@ -37,22 +37,29 @@ class Kalman(object):
         self.print_state_and_covariance(info_text)
         self.update_plotter(z)
 
-    def _filter(self, dt, z, R):
-        # PREDICT
-        xhatminus = np.dot(self.F(dt), self.x)
-        Pminus = np.dot(np.dot(self.F(dt), self.P), self.FT(dt)) + self.Q(dt)
+    def extrapolate(self, dt):
+        self.x = np.dot(self.F(dt), self.x)
+        self.P = np.dot(np.dot(self.F(dt), self.P), self.FT(dt)) + self.Q(dt)
 
-        # UPDATE
+        cond_P = np.linalg.cond(self.P)
+        if cond_P > 10**10:
+            log.warning('Huge condition number: %s' % cond_P)
+
+    def update(self, dt, z, R):
         # innovation
-        ytilde = z - np.dot(self.H(dt), xhatminus)
-        S = np.dot(np.dot(self.H(dt), Pminus), self.HT(dt)) + R
+        ytilde = z - np.dot(self.H(dt), self.x)
+        S = np.dot(np.dot(self.H(dt), self.P), self.HT(dt)) + R
         Sinv = np.linalg.inv(S)
 
         # state
-        KalmanGain = np.dot(np.dot(Pminus, self.HT(dt)), Sinv)
-        self.x = xhatminus + np.dot(KalmanGain, ytilde)
+        KalmanGain = np.dot(np.dot(self.P, self.HT(dt)), Sinv)
+        self.x = self.x + np.dot(KalmanGain, ytilde)
         self.P = np.dot(
-            np.identity(len(self.x)) - np.dot(KalmanGain, self.H(dt)), Pminus)
+            np.identity(len(self.x)) - np.dot(KalmanGain, self.H(dt)), self.P)
+
+    def _filter(self, dt, z, R):
+        self.extrapolate(dt)
+        self.update(dt, z, R)
 
     def print_state_and_covariance(self, name):
         log.debug("%s x: %s" % (name, self.x))

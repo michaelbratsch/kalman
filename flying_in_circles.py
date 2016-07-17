@@ -27,7 +27,7 @@ jerk2d = State4Measurement1_2d(plant_noise=0.000001)
 
 
 def generate_measurements(n):
-    for i in range(1, n):
+    for i in range(1, n + 1):
         r = 10.0
         alpha = 10.0
         x = r * math.sin(i / alpha)
@@ -47,9 +47,9 @@ def generate_measurements(n):
 
         yield z, R
 
-for z, R in generate_measurements(60):
-    for filter_2d in [position2d, low_speed2d, low_speed_turn2d,
-                      acceleration2d, jerk2d]:
+for filter_2d in [position2d, low_speed2d, low_speed_turn2d,
+                  acceleration2d, jerk2d]:
+    for z, R in generate_measurements(60):
         filter_2d.filter(dt=1.0, z=z, R=R)
 
 print "Condition numbers of covariances:"
