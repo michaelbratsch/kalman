@@ -6,8 +6,7 @@ import math
 from kalman.models import (State1Mearsurement1_2d,
                            State2Measurement1_2d,
                            State3Measurement1_2d,
-                           State4Measurement1_2d,
-                           State2_With_TurnRate_Measurement1_2d)
+                           State4Measurement1_2d)
 import numpy as np
 
 
@@ -18,8 +17,8 @@ position2d = State1Mearsurement1_2d(plant_noise=1.0)
 
 low_speed2d = State2Measurement1_2d(plant_noise=0.05)
 
-low_speed_turn2d = State2_With_TurnRate_Measurement1_2d(plant_noise=0.05,
-                                                        turn_rate=-0.1)
+low_speed_turn2d = State2Measurement1_2d(plant_noise=0.05,
+                                         turn_rate=-0.1)
 
 acceleration2d = State3Measurement1_2d(plant_noise=0.001)
 
@@ -47,9 +46,9 @@ def generate_measurements(n):
 
         yield z, R
 
-for filter_2d in [position2d, low_speed2d, low_speed_turn2d,
-                  acceleration2d, jerk2d]:
-    for z, R in generate_measurements(60):
+for z, R in generate_measurements(60):
+    for filter_2d in [position2d, low_speed2d, low_speed_turn2d,
+                      acceleration2d, jerk2d]:
         filter_2d.filter(dt=1.0, z=z, R=R)
 
 print "Condition numbers of covariances:"
