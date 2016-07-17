@@ -21,8 +21,8 @@ class Kalman(object):
     def FT(self, dt):
         return np.transpose(self.F(dt))
 
-    def HT(self, dt):
-        return np.transpose(self.H(dt))
+    def HT(self):
+        return np.transpose(self.H())
 
     def filter(self, dt, z, R):
         log.debug("Filter input dt: %s, z: %s" % (dt, z))
@@ -45,21 +45,21 @@ class Kalman(object):
         if cond_P > 10**10:
             log.warning('Huge condition number: %s' % cond_P)
 
-    def update(self, dt, z, R):
+    def update(self, z, R):
         # innovation
-        ytilde = z - np.dot(self.H(dt), self.x)
-        S = np.dot(np.dot(self.H(dt), self.P), self.HT(dt)) + R
+        ytilde = z - np.dot(self.H(), self.x)
+        S = np.dot(np.dot(self.H(), self.P), self.HT()) + R
         Sinv = np.linalg.inv(S)
 
         # state
-        KalmanGain = np.dot(np.dot(self.P, self.HT(dt)), Sinv)
+        KalmanGain = np.dot(np.dot(self.P, self.HT()), Sinv)
         self.x = self.x + np.dot(KalmanGain, ytilde)
         self.P = np.dot(
-            np.identity(len(self.x)) - np.dot(KalmanGain, self.H(dt)), self.P)
+            np.identity(len(self.x)) - np.dot(KalmanGain, self.H()), self.P)
 
     def _filter(self, dt, z, R):
         self.extrapolate(dt)
-        self.update(dt, z, R)
+        self.update(z, R)
 
     def print_state_and_covariance(self, name):
         log.debug("%s x: %s" % (name, self.x))

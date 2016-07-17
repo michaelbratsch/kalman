@@ -24,7 +24,7 @@ class State1Mearsurement1_2d(Kalman, Plot2dMixin):
     def F(self, dt):
         return np.identity(2)
 
-    def H(self, dt):
+    def H(self):
         return np.identity(2)
 
     def Q(self, dt):
@@ -55,7 +55,7 @@ class State2Measurement1_2d(Kalman, Plot2dMixin):
                          [0.0, 0.0, 1.0, 0.0],
                          [0.0, 0.0, 0.0, 1.0]])
 
-    def H(self, dt):
+    def H(self):
         return np.eye(N=2, M=4)
 
     def Q(self, dt):
@@ -100,7 +100,7 @@ class State2_With_TurnRate_Measurement1_2d(Kalman, Plot2dMixin):
                          [0.0, 0.0, cosO, -sinOt],
                          [0.0, 0.0, sinOt, cosO]])
 
-    def H(self, dt):
+    def H(self):
         return np.eye(N=2, M=4)
 
     def Q(self, dt):
@@ -139,7 +139,7 @@ class State3Measurement1_2d(Kalman, Plot2dMixin):
                          [0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
                          [0.0, 0.0, 0.0, 0.0, 0.0, 1.0]])
 
-    def H(self, dt):
+    def H(self):
         return np.eye(N=2, M=6)
 
     def Q(self, dt):
@@ -185,7 +185,7 @@ class State4Measurement1_2d(Kalman, Plot2dMixin):
                          [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
                          [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]])
 
-    def H(self, dt):
+    def H(self):
         return np.eye(N=2, M=8)
 
     def Q(self, dt):
