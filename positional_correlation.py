@@ -13,9 +13,6 @@ import numpy as np
 logging.basicConfig(level=logging.WARN)
 
 
-def correlation(a, b):
-    return math.sqrt(a * b)
-
 plant_noise = 0.0
 
 position2d = State1Mearsurement1_2d(plant_noise=plant_noise)
@@ -34,7 +31,7 @@ def generate_measurements(n):
 
         s_xx_R = 10.0
         s_yy_R = 10.0
-        s_xy_R = -0.0 * correlation(s_xx_R, s_yy_R)
+        s_xy_R = -0.0 * math.sqrt(s_xx_R * s_yy_R)
 
         R = np.array([[s_xx_R, s_xy_R],
                       [s_xy_R, s_xx_R]])
@@ -43,7 +40,7 @@ def generate_measurements(n):
 
         yield z, R
 
-for z, R in generate_measurements(60):
+for z, R in generate_measurements(100):
     for filter_2d in [position2d, low_speed2d, acceleration2d, jerk2d]:
         filter_2d.filter(dt=1.0, z=z, R=R)
 
