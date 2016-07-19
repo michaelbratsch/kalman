@@ -2,7 +2,7 @@
 
 import logging
 
-from kalman.models import State2Measurement1_2d
+from models.dim_2.order_2 import State2Measurement1
 import numpy as np
 
 
@@ -11,12 +11,12 @@ logging.basicConfig(level=logging.WARN)
 plant_noise = 0.0
 turn_rate = 0.4
 
-low_speed_old_turn2d = State2Measurement1_2d(plant_noise=plant_noise,
-                                             turn_rate=turn_rate,
-                                             perfect_turn=False)
-low_speed_new_turn2d = State2Measurement1_2d(plant_noise=plant_noise,
-                                             turn_rate=turn_rate,
-                                             perfect_turn=True)
+low_speed_old_turn2d = State2Measurement1(plant_noise=plant_noise,
+                                          turn_rate=turn_rate,
+                                          perfect_turn=False)
+low_speed_new_turn2d = State2Measurement1(plant_noise=plant_noise,
+                                          turn_rate=turn_rate,
+                                          perfect_turn=True)
 
 z = np.array([0.0, 0.0], float)
 R = np.array([[1.0, 0.0],
@@ -39,4 +39,4 @@ for _ in range(10):
 low_speed_old_turn2d.plot(121)
 low_speed_new_turn2d.plot(122)
 
-State2Measurement1_2d.show()
+State2Measurement1.show()

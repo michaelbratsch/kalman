@@ -3,26 +3,26 @@
 import logging
 import math
 
-from kalman.models import (State1Mearsurement1_2d,
-                           State2Measurement1_2d,
-                           State3Measurement1_2d,
-                           State4Measurement1_2d)
+from models.dim_2.order_1 import State1Mearsurement1
+from models.dim_2.order_4 import State4Measurement1
+from models.dim_2.order_2 import State2Measurement1
+from models.dim_2.order_3 import State3Measurement1
 import numpy as np
 
 
 logging.basicConfig(level=logging.WARN)
 
 
-position2d = State1Mearsurement1_2d(plant_noise=1.0)
+position2d = State1Mearsurement1(plant_noise=1.0)
 
-low_speed2d = State2Measurement1_2d(plant_noise=0.05)
+low_speed2d = State2Measurement1(plant_noise=0.05)
 
-low_speed_turn2d = State2Measurement1_2d(plant_noise=0.05,
+low_speed_turn2d = State2Measurement1(plant_noise=0.05,
                                          turn_rate=-0.1)
 
-acceleration2d = State3Measurement1_2d(plant_noise=0.001)
+acceleration2d = State3Measurement1(plant_noise=0.001)
 
-jerk2d = State4Measurement1_2d(plant_noise=0.000001)
+jerk2d = State4Measurement1(plant_noise=0.000001)
 
 
 def generate_measurements(n):
@@ -64,4 +64,4 @@ low_speed_turn2d.plot(233)
 acceleration2d.plot(234)
 jerk2d.plot(235)
 
-State1Mearsurement1_2d.show()
+State1Mearsurement1.show()
