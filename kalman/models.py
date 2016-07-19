@@ -33,11 +33,13 @@ class State1Mearsurement1_2d(Kalman, Plot2dMixin):
 
 class State2Measurement1_2d(Kalman, Plot2dMixin):
 
-    def __init__(self, turn_rate=None, *args, **kwargs):
+    def __init__(self, turn_rate=None, perfect_turn=True, *args, **kwargs):
         super(State2Measurement1_2d, self).__init__(
             *args, **kwargs)
         assert turn_rate != 0.0, "Turn-rate can not be set to zero."
+        # turn rate [rad/s]
         self.turn_rate = turn_rate
+        self.perfect_turn = perfect_turn
 
     def initialize_state(self, z, R):
         self.x = np.zeros(4)
@@ -62,14 +64,24 @@ class State2Measurement1_2d(Kalman, Plot2dMixin):
                              [0.0, 0.0, 1.0, 0.0],
                              [0.0, 0.0, 0.0, 1.0]])
         else:
-            omega = self.turn_rate
-            sinOt = math.sin(omega) * dt
-            cosO = math.cos(omega)
-            OcosO = 1.0 - cosO
-            return np.array([[1.0, 0.0, sinOt / omega, -OcosO / omega],
-                             [0.0, 1.0, OcosO / omega, sinOt / omega],
-                             [0.0, 0.0, cosO, -sinOt],
-                             [0.0, 0.0, sinOt, cosO]])
+            if self.perfect_turn:
+                omega = self.turn_rate
+                sinOt = math.sin(omega * dt)
+                cosOt = math.cos(omega * dt)
+                OcosOt = 1.0 - cosOt
+                return np.array([[1.0, 0.0, sinOt / omega, -OcosOt / omega],
+                                 [0.0, 1.0, OcosOt / omega, sinOt / omega],
+                                 [0.0, 0.0, cosOt, -sinOt],
+                                 [0.0, 0.0, sinOt, cosOt]])
+            else:
+                omega = self.turn_rate
+                sinOt = math.sin(omega) * dt
+                cosO = math.cos(omega)
+                OcosO = 1.0 - cosO
+                return np.array([[1.0, 0.0, sinOt / omega, -OcosO / omega],
+                                 [0.0, 1.0, OcosO / omega, sinOt / omega],
+                                 [0.0, 0.0, cosO, -sinOt],
+                                 [0.0, 0.0, sinOt, cosO]])
 
     def H(self):
         return np.eye(N=2, M=4)

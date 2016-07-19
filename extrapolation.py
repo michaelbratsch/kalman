@@ -1,42 +1,42 @@
 #!/usr/bin/python
 
 import logging
-import math
 
-from kalman.models import State2_Measurement1_2d
+from kalman.models import State2Measurement1_2d
 import numpy as np
 
 
 logging.basicConfig(level=logging.WARN)
 
+plant_noise = 0.0
+turn_rate = 0.4
 
-low_speed_turn2d = State2_Measurement1_2d(plant_noise=0.05,
-                                          turn_rate=-0.2)
+low_speed_old_turn2d = State2Measurement1_2d(plant_noise=plant_noise,
+                                             turn_rate=turn_rate,
+                                             perfect_turn=False)
+low_speed_new_turn2d = State2Measurement1_2d(plant_noise=plant_noise,
+                                             turn_rate=turn_rate,
+                                             perfect_turn=True)
+
+z = np.array([0.0, 0.0], float)
+R = np.array([[1.0, 0.0],
+              [0.0, 1.0]])
+
+filters = [low_speed_old_turn2d, low_speed_new_turn2d]
+
+for filter_2d in filters:
+    filter_2d.initialize_state(z, R)
+    filter_2d.x[2] = 10.0
 
 
-def generate_measurements(n):
-    for i in range(n):
-        # MEASUREMENT
-        z = np.array([i, i], float)
+for _ in range(10):
+    for filter_2d in filters:
+        filter_2d.extrapolate(dt=2.0)
+        filter_2d.update_plotter()
+        # print np.diagonal(filter_2d.P), np.linalg.cond(filter_2d.P)
+        # print np.linalg.eig(np.dot(filter_2d.FT(0.09), filter_2d.F(0.09)))
 
-        s_xx_R = 1.0
-        s_yy_R = 1.0
-        s_xy_R = -0.0 * math.sqrt(s_xx_R * s_yy_R)
+low_speed_old_turn2d.plot(121)
+low_speed_new_turn2d.plot(122)
 
-        R = np.array([[s_xx_R, s_xy_R],
-                      [s_xy_R, s_xx_R]])
-
-        z += np.random.multivariate_normal(mean=z, cov=R)
-
-        yield z, R
-
-for z, R in generate_measurements(2):
-    low_speed_turn2d.filter(dt=1.0, z=z, R=R)
-
-for _ in range(30):
-    low_speed_turn2d.extrapolate(dt=2.0)
-    low_speed_turn2d.update_plotter()
-
-low_speed_turn2d.plot(111)
-
-State2_Measurement1_2d.show()
+State2Measurement1_2d.show()

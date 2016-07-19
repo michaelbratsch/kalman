@@ -45,8 +45,9 @@ class Plot2dMixin(object):
         x, y = zip(*self.positions)
         axes.plot(x, y, marker='o')
 
-        x, y = zip(*self.measurements)
-        axes.plot(x, y, 'ro')
+        if self.measurements:
+            x, y = zip(*self.measurements)
+            axes.plot(x, y, 'ro')
 
         for pos, speed in zip(self.positions, self.speeds):
             if speed:
