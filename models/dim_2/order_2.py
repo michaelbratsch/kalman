@@ -5,15 +5,7 @@ from kalman.plotter import Plot2dMixin
 import numpy as np
 
 
-class State2Measurement1(Kalman, Plot2dMixin):
-
-    def __init__(self, turn_rate=None, perfect_turn=True, *args, **kwargs):
-        super(State2Measurement1, self).__init__(
-            *args, **kwargs)
-        assert turn_rate != 0.0, "Turn-rate can not be set to zero."
-        # turn rate [rad/s]
-        self.turn_rate = turn_rate
-        self.perfect_turn = perfect_turn
+class State2Measurement1Base(Kalman, Plot2dMixin):
 
     def initialize_state(self, z, R):
         self.x = np.zeros(4)
@@ -31,32 +23,6 @@ class State2Measurement1(Kalman, Plot2dMixin):
     def get_speed(self):
         return self.x[2], self.x[3]
 
-    def F(self, dt):
-        if self.turn_rate is None:
-            return np.array([[1.0, 0.0,  dt, 0.0],
-                             [0.0, 1.0, 0.0, dt],
-                             [0.0, 0.0, 1.0, 0.0],
-                             [0.0, 0.0, 0.0, 1.0]])
-        else:
-            if self.perfect_turn:
-                omega = self.turn_rate
-                sinOt = math.sin(omega * dt)
-                cosOt = math.cos(omega * dt)
-                OcosOt = 1.0 - cosOt
-                return np.array([[1.0, 0.0, sinOt / omega, -OcosOt / omega],
-                                 [0.0, 1.0, OcosOt / omega, sinOt / omega],
-                                 [0.0, 0.0, cosOt, -sinOt],
-                                 [0.0, 0.0, sinOt, cosOt]])
-            else:
-                omega = self.turn_rate
-                sinOt = math.sin(omega) * dt
-                cosO = math.cos(omega)
-                OcosO = 1.0 - cosO
-                return np.array([[1.0, 0.0, sinOt / omega, -OcosO / omega],
-                                 [0.0, 1.0, OcosO / omega, sinOt / omega],
-                                 [0.0, 0.0, cosO, -sinOt],
-                                 [0.0, 0.0, sinOt, cosO]])
-
     def H(self):
         return np.eye(N=2, M=4)
 
@@ -68,3 +34,52 @@ class State2Measurement1(Kalman, Plot2dMixin):
                                             [0.0, t_3, 0.0, t_2],
                                             [t_2, 0.0, dt,  0.0],
                                             [0.0, t_2, 0.0, dt]])
+
+
+class State2Measurement1(State2Measurement1Base):
+
+    def F(self, dt):
+        return np.array([[1.0, 0.0,  dt, 0.0],
+                         [0.0, 1.0, 0.0, dt],
+                         [0.0, 0.0, 1.0, 0.0],
+                         [0.0, 0.0, 0.0, 1.0]])
+
+
+class State2Measurement1PerfectTurn(State2Measurement1Base):
+
+    def __init__(self, turn_rate, *args, **kwargs):
+        super(State2Measurement1PerfectTurn, self).__init__(
+            *args, **kwargs)
+        assert turn_rate != 0.0, "Turn-rate can not be set to zero."
+        # turn rate [rad/s]
+        self.turn_rate = turn_rate
+
+    def F(self, dt):
+        omega = self.turn_rate
+        sinOt = math.sin(omega * dt)
+        cosOt = math.cos(omega * dt)
+        OcosOt = 1.0 - cosOt
+        return np.array([[1.0, 0.0, sinOt / omega, -OcosOt / omega],
+                         [0.0, 1.0, OcosOt / omega, sinOt / omega],
+                         [0.0, 0.0, cosOt, -sinOt],
+                         [0.0, 0.0, sinOt, cosOt]])
+
+
+class State2Measurement1TwistedTurn(State2Measurement1Base):
+
+    def __init__(self, turn_rate, *args, **kwargs):
+        super(State2Measurement1TwistedTurn, self).__init__(
+            *args, **kwargs)
+        assert turn_rate != 0.0, "Turn-rate can not be set to zero."
+        # turn rate [rad/s]
+        self.turn_rate = turn_rate
+
+    def F(self, dt):
+        omega = self.turn_rate
+        sinOt = math.sin(omega) * dt
+        cosO = math.cos(omega)
+        OcosO = 1.0 - cosO
+        return np.array([[1.0, 0.0, sinOt / omega, -OcosO / omega],
+                         [0.0, 1.0, OcosO / omega, sinOt / omega],
+                         [0.0, 0.0, cosO, -sinOt],
+                         [0.0, 0.0, sinOt, cosO]])
