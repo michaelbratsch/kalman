@@ -3,9 +3,6 @@ import logging
 import numpy as np
 
 
-log = logging.getLogger(__name__)
-
-
 class Kalman(object):
 
     def __init__(self, plant_noise):
@@ -18,6 +15,8 @@ class Kalman(object):
 
         self.plant_noise = plant_noise
 
+        self.log = logging.getLogger(self.__class__.__name__)
+
     def FT(self, dt):
         return np.transpose(self.F(dt))
 
@@ -25,7 +24,7 @@ class Kalman(object):
         return np.transpose(self.H())
 
     def filter(self, dt, z, R):
-        log.debug("Filter input dt: %s, z: %s" % (dt, z))
+        self.log.debug("Filter input dt: %s, z: %s" % (dt, z))
 
         if self.x is None:
             self.initialize_state(z, R)
@@ -43,7 +42,7 @@ class Kalman(object):
 
         cond_P = np.linalg.cond(self.P)
         if cond_P > 10**10:
-            log.warning('Huge condition number: %s' % cond_P)
+            self.log.warning('Huge condition number: %.2e' % cond_P)
 
     def update(self, z, R):
         # innovation
@@ -62,5 +61,5 @@ class Kalman(object):
         self.update(z, R)
 
     def print_state_and_covariance(self, name):
-        log.debug("%s x: %s" % (name, self.x))
-        log.debug("P: \n%s" % self.P)
+        self.log.debug("%s x: %s" % (name, self.x))
+        self.log.debug("P: \n%s" % self.P)
