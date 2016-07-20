@@ -17,12 +17,6 @@ class Kalman(object):
 
         self.log = logging.getLogger(self.__class__.__name__)
 
-    def FT(self, dt):
-        return np.transpose(self.F(dt))
-
-    def HT(self):
-        return np.transpose(self.H())
-
     def filter(self, dt, z, R):
         self.log.debug("Filter input dt: %s, z: %s" % (dt, z))
 
@@ -38,7 +32,7 @@ class Kalman(object):
 
     def extrapolate(self, dt):
         self.x = np.dot(self.F(dt), self.x)
-        self.P = np.dot(np.dot(self.F(dt), self.P), self.FT(dt)) + self.Q(dt)
+        self.P = np.dot(np.dot(self.F(dt), self.P), self.F(dt).T) + self.Q(dt)
 
         cond_P = np.linalg.cond(self.P)
         if cond_P > 10**10:
@@ -47,11 +41,11 @@ class Kalman(object):
     def update(self, z, R):
         # innovation
         ytilde = z - np.dot(self.H(), self.x)
-        S = np.dot(np.dot(self.H(), self.P), self.HT()) + R
+        S = np.dot(np.dot(self.H(), self.P), self.H().T) + R
         Sinv = np.linalg.inv(S)
 
         # state
-        KalmanGain = np.dot(np.dot(self.P, self.HT()), Sinv)
+        KalmanGain = np.dot(np.dot(self.P, self.H().T), Sinv)
         self.x = self.x + np.dot(KalmanGain, ytilde)
         self.P = np.dot(
             np.identity(len(self.x)) - np.dot(KalmanGain, self.H()), self.P)

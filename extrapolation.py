@@ -7,7 +7,7 @@ from models.dim_2.order_2 import (State2Measurement1PerfectTurn,
 import numpy as np
 
 
-logging.basicConfig(level=logging.WARN)
+logging.basicConfig(level=logging.INFO)
 
 plant_noise = 0.0
 turn_rate = 0.4
@@ -25,15 +25,19 @@ filters = [perfect_turn2d, twisted_turn2d]
 
 for filter_2d in filters:
     filter_2d.initialize_state(z, R)
-    filter_2d.x[2] = 10.0
+    filter_2d.x[2] = 1.0
 
 
-for _ in range(10):
+for _ in range(40):
     for filter_2d in filters:
-        filter_2d.extrapolate(dt=2.0)
+        filter_2d.extrapolate(dt=0.5)
         filter_2d.update_plotter()
-        # print np.diagonal(filter_2d.P), np.linalg.cond(filter_2d.P)
-        # print np.linalg.eig(np.dot(filter_2d.FT(0.09), filter_2d.F(0.09)))
+
+        filter_2d.log.info(
+            'product: %s diag: %s' % (
+                np.prod(np.linalg.eigvals(filter_2d.P)),
+                np.diagonal(filter_2d.P))
+        )
 
 perfect_turn2d.plot(121)
 twisted_turn2d.plot(122)

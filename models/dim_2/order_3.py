@@ -1,5 +1,5 @@
-from kalman.kalman import Kalman
-from kalman.plotter import Plot2dMixin
+from filter.kalman import Kalman
+from filter.plotter import Plot2dMixin
 import numpy as np
 
 
