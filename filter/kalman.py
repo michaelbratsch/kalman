@@ -1,4 +1,5 @@
 import logging
+import math
 
 import numpy as np
 
@@ -12,6 +13,9 @@ class Kalman(object):
         # will be initialized on first measurement
         self.x = None
         self.P = None
+
+        # probability of the model, used especially for IMM
+        self.probability = 1.0
 
         self.plant_noise = plant_noise
 
@@ -44,11 +48,15 @@ class Kalman(object):
         S = np.dot(np.dot(self.H(), self.P), self.H().T) + R
         Sinv = np.linalg.inv(S)
 
-        # state
+        # update
         KalmanGain = np.dot(np.dot(self.P, self.H().T), Sinv)
         self.x = self.x + np.dot(KalmanGain, ytilde)
         self.P = np.dot(
             np.identity(len(self.x)) - np.dot(KalmanGain, self.H()), self.P)
+
+        self.probability = (
+            math.exp(-0.5 * np.dot(np.dot(ytilde, Sinv), ytilde.T)) /
+            math.sqrt(np.linalg.det(2.0 * math.pi * S)))
 
     def _filter(self, dt, z, R):
         self.extrapolate(dt)

@@ -22,7 +22,8 @@ def create_ellipse(pos, cov):
 class Plot2dMixin(object):
 
     fig = plt.figure()
-    all_axes = []
+    pos_axes = []
+    plant_noise_format = "%.1e"
 
     def __init__(self):
         # plot initial state
@@ -30,6 +31,7 @@ class Plot2dMixin(object):
         self.position_accuracies = []
         self.speeds = []
         self.measurements = []
+        self.probabilities = []
 
     def update_plotter(self, measurement=None):
         self.positions.append(self.get_position())
@@ -37,10 +39,17 @@ class Plot2dMixin(object):
         self.speeds.append(self.get_speed())
         if measurement is not None:
             self.measurements.append(measurement)
+        if hasattr(self, 'filter_models'):
+            self.probabilities.append(
+                [fm.probability for fm in self.filter_models])
 
     def plot(self, subplot=111):
         axes = self.fig.add_subplot(subplot)
-        axes.set_title(self.__class__.__name__)
+        if hasattr(self, 'plant_noise'):
+            axes.set_title(('%s PN: ' + self.plant_noise_format) %
+                           (self.__class__.__name__, self.plant_noise))
+        else:
+            axes.set_title(self.__class__.__name__)
 
         x, y = zip(*self.positions)
         axes.plot(x, y, marker='o')
@@ -62,15 +71,24 @@ class Plot2dMixin(object):
         axes.set_aspect('equal')
         axes.autoscale()
 
-        self.all_axes.append(axes)
+        self.pos_axes.append(axes)
+
+    def plot_probabilities(self, subplot=212):
+        axes = self.fig.add_subplot(subplot)
+        axes.set_title('%s probabilities' % self.__class__.__name__)
+
+        for prob, fm in zip(zip(*self.probabilities), self.filter_models):
+            axes.plot(prob, label=('%s PN: ' + self.plant_noise_format) %
+                      (fm.__class__.__name__, fm.plant_noise))
+        axes.legend()
 
     @classmethod
     def show(cls):
-        x_0 = min(axe.get_xlim()[0] for axe in cls.all_axes)
-        x_1 = max(axe.get_xlim()[1] for axe in cls.all_axes)
-        y_0 = min(axe.get_ylim()[0] for axe in cls.all_axes)
-        y_1 = max(axe.get_ylim()[1] for axe in cls.all_axes)
-        for axe in cls.all_axes:
+        x_0 = min(axe.get_xlim()[0] for axe in cls.pos_axes)
+        x_1 = max(axe.get_xlim()[1] for axe in cls.pos_axes)
+        y_0 = min(axe.get_ylim()[0] for axe in cls.pos_axes)
+        y_1 = max(axe.get_ylim()[1] for axe in cls.pos_axes)
+        for axe in cls.pos_axes:
             axe.set_xlim((x_0, x_1))
             axe.set_ylim((y_0, y_1))
         plt.show()

@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import logging
 import math
 
 from models.dim_2.order_1 import State1Mearsurement1
@@ -8,9 +7,6 @@ from models.dim_2.order_2 import State2Measurement1
 from models.dim_2.order_3 import State3Measurement1
 from models.dim_2.order_4 import State4Measurement1
 import numpy as np
-
-
-logging.basicConfig(level=logging.WARN)
 
 
 plant_noise = 0.0
@@ -36,7 +32,7 @@ def generate_measurements(n):
         R = np.array([[s_xx_R, s_xy_R],
                       [s_xy_R, s_xx_R]])
 
-        z += np.random.multivariate_normal(mean=z, cov=R)
+        z = np.random.multivariate_normal(mean=z, cov=R)
 
         yield z, R
 
