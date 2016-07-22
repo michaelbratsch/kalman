@@ -3,6 +3,7 @@
 import logging
 import math
 
+from filter.imm import IMM
 from models.dim_2.order_1 import State1Mearsurement1
 from models.dim_2.order_2 import (State2Measurement1,
                                   State2Measurement1PerfectTurn,
@@ -35,6 +36,12 @@ acceleration2d = State3Measurement1(plant_noise=0.1)
 
 jerk2d = State4Measurement1(plant_noise=0.001)
 
+imm2d = IMM(
+    filter_models=[State2Measurement1PerfectTurn(plant_noise=plant_noise,
+                                                 turn_rate=turn_rate)],
+    switching_matrix=np.eye(1)
+)
+
 
 def generate_measurements(n):
     for i in range(1, n + 1):
@@ -59,7 +66,7 @@ def generate_measurements(n):
 
 for z, R in generate_measurements(60):
     for filter_2d in [position2d, low_speed2d, low_speed_perfect_turn2d,
-                      low_speed_twisted_turn2d, acceleration2d, jerk2d]:
+                      low_speed_twisted_turn2d, acceleration2d, jerk2d, imm2d]:
         filter_2d.filter(dt=1.0, z=z, R=R)
 
 print "Condition numbers of covariances:"
@@ -75,6 +82,7 @@ low_speed2d.plot(232)
 low_speed_perfect_turn2d.plot(233)
 low_speed_twisted_turn2d.plot(234)
 acceleration2d.plot(235)
-jerk2d.plot(236)
+# jerk2d.plot(236)
+imm2d.plot(236)
 
 State1Mearsurement1.show()
