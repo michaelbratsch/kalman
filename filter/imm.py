@@ -3,6 +3,15 @@ from filter.plotter import Plot2dMixin
 import numpy as np
 
 
+def generate_switching_matrix(n, diag):
+    if n > 1:
+        switching_matrix = np.full((n, n), 0.05 / (n - 1))
+        np.fill_diagonal(switching_matrix, diag)
+    else:
+        switching_matrix = np.eye(1)
+    return switching_matrix
+
+
 class IMM(Plot2dMixin):
 
     def __init__(self, filter_models, switching_matrix):
