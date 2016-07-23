@@ -2,6 +2,7 @@
 
 import math
 
+from filter.plotter import plot_all
 from models.dim_2.order_1 import State1Mearsurement1
 from models.dim_2.order_2 import (State2Measurement1,
                                   State2Measurement1PerfectTurn,
@@ -11,25 +12,19 @@ from models.dim_2.order_4 import State4Measurement1
 import numpy as np
 
 
-position2d = State1Mearsurement1(plant_noise=5.0)
-
-low_speed2d = State2Measurement1(plant_noise=1.0)
-
-
 plant_noise = 0.001
 turn_rate = -0.1
 
-low_speed_perfect_turn2d = State2Measurement1PerfectTurn(
-    plant_noise=plant_noise,
-    turn_rate=turn_rate)
-
-low_speed_twisted_turn2d = State2Measurement1TwistedTurn(
-    plant_noise=plant_noise,
-    turn_rate=turn_rate)
-
-acceleration2d = State3Measurement1(plant_noise=0.1)
-
-jerk2d = State4Measurement1(plant_noise=0.001)
+filters = [
+    State1Mearsurement1(plant_noise=5.0),
+    State2Measurement1(plant_noise=1.0),
+    State2Measurement1PerfectTurn(plant_noise=plant_noise,
+                                  turn_rate=turn_rate),
+    State2Measurement1TwistedTurn(plant_noise=plant_noise,
+                                  turn_rate=turn_rate),
+    State3Measurement1(plant_noise=0.1),
+    State4Measurement1(plant_noise=0.001)
+]
 
 
 def generate_measurements(n):
@@ -53,24 +48,16 @@ def generate_measurements(n):
 
         yield z, R
 
+np.random.seed(42)
+
 for z, R in generate_measurements(60):
-    for filter_2d in [position2d, low_speed2d, low_speed_perfect_turn2d,
-                      low_speed_twisted_turn2d, acceleration2d, jerk2d]:
+    for filter_2d in filters:
         filter_2d.filter(dt=1.0, z=z, R=R)
 
 print "Condition numbers of covariances:"
-print "position: ", np.linalg.cond(position2d.P)
-print "speed: ", np.linalg.cond(low_speed2d.P)
-print "turnrate perfect: ", np.linalg.cond(low_speed_perfect_turn2d.P)
-print "turnrate twisted: ", np.linalg.cond(low_speed_twisted_turn2d.P)
-print "acceleration: ", np.linalg.cond(acceleration2d.P)
-print "jerk: ", np.linalg.cond(jerk2d.P)
+for f in filters:
+    print "%s: %.1e" % (f.__class__.__name__, np.linalg.cond(f.P))
 
-position2d.plot(231)
-low_speed2d.plot(232)
-low_speed_perfect_turn2d.plot(233)
-low_speed_twisted_turn2d.plot(234)
-acceleration2d.plot(235)
-jerk2d.plot(236)
+plot_all(filters, vertical=False, dim=2)
 
 State1Mearsurement1.show()

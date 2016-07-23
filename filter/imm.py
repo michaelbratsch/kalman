@@ -1,5 +1,5 @@
 
-from filter.plotter import Plot2dMixin
+from filter.plotter import Plot2dIMMMixin
 import numpy as np
 
 
@@ -12,7 +12,7 @@ def generate_switching_matrix(n, diag):
     return np.eye(1)
 
 
-class IMM(Plot2dMixin):
+class IMM(Plot2dIMMMixin):
 
     def __init__(self, filter_models, switching_matrix):
         super(IMM, self).__init__()

@@ -1,3 +1,4 @@
+import math
 from matplotlib.patches import Ellipse
 
 import matplotlib.pyplot as plt
@@ -19,9 +20,21 @@ def create_ellipse(pos, cov):
                    color='green', fill=False)
 
 
+def plot_all(filter_models, vertical=True, dim=1):
+    items_per_dim = int(math.ceil(len(filter_models) / float(dim)))
+
+    for i, fm in enumerate(filter_models):
+        if vertical:
+            pattern = '%s%s%s' % (items_per_dim, dim, i + 1)
+        else:
+            pattern = '%s%s%s' % (dim, items_per_dim, i + 1)
+
+        fm.plot(subplot=pattern)
+
+
 class Plot2dMixin(object):
 
-    fig = plt.figure()
+    figure = plt.figure()
     pos_axes = []
     plant_noise_format = "%.1e"
 
@@ -31,7 +44,6 @@ class Plot2dMixin(object):
         self.position_accuracies = []
         self.speeds = []
         self.measurements = []
-        self.probabilities = []
 
     def get_position(self):
         return self.x[0], self.x[1]
@@ -49,12 +61,16 @@ class Plot2dMixin(object):
         self.speeds.append(self.get_speed())
         if measurement is not None:
             self.measurements.append(measurement)
-        if hasattr(self, 'filter_models'):
-            self.probabilities.append(
-                [fm.probability for fm in self.filter_models])
 
-    def plot(self, subplot=111):
-        axes = self.fig.add_subplot(subplot)
+    def get_axes(self, figure, subplot):
+        if figure:
+            return figure.add_subplot(subplot)
+
+        return self.figure.add_subplot(subplot)
+
+    def plot(self, figure=None, subplot=111):
+        axes = self.get_axes(figure, subplot)
+
         if hasattr(self, 'plant_noise'):
             axes.set_title(('%s PN: ' + self.plant_noise_format) %
                            (self.__class__.__name__, self.plant_noise))
@@ -83,15 +99,6 @@ class Plot2dMixin(object):
 
         self.pos_axes.append(axes)
 
-    def plot_probabilities(self, subplot=212):
-        axes = self.fig.add_subplot(subplot)
-        axes.set_title('%s probabilities' % self.__class__.__name__)
-
-        for prob, fm in zip(zip(*self.probabilities), self.filter_models):
-            axes.plot(prob, label=('%s PN: ' + self.plant_noise_format) %
-                      (fm.__class__.__name__, fm.plant_noise))
-        axes.legend()
-
     @classmethod
     def show(cls):
         x_0 = min(axe.get_xlim()[0] for axe in cls.pos_axes)
@@ -102,3 +109,37 @@ class Plot2dMixin(object):
             axe.set_xlim((x_0, x_1))
             axe.set_ylim((y_0, y_1))
         plt.show()
+
+
+class Plot2dIMMMixin(Plot2dMixin):
+
+    def __init__(self):
+        super(Plot2dIMMMixin, self).__init__()
+
+        self.probabilities = []
+
+    def update_plotter(self, measurement=None):
+        super(Plot2dIMMMixin, self).update_plotter(
+            measurement=measurement)
+
+        self.probabilities.append(
+            [fm.probability for fm in self.filter_models])
+
+    def plot_probabilities(self, figure=None, subplot=212):
+        axes = self.get_axes(figure=figure, subplot=subplot)
+
+        axes.set_title('%s probabilities' % self.__class__.__name__)
+
+        for prob, fm in zip(zip(*self.probabilities), self.filter_models):
+            axes.plot(prob, label=('%s PN: ' + self.plant_noise_format) %
+                      (fm.__class__.__name__, fm.plant_noise))
+        axes.legend()
+
+    def plot_all(self, vertical=True, dim=1):
+        # plots of different kalman filters
+        plot_all(filter_models=self.filter_models, vertical=vertical, dim=dim)
+
+        # plot IMM result
+        figure = plt.figure()
+        self.plot(figure=figure, subplot='211')
+        self.plot_probabilities(figure=figure, subplot='212')

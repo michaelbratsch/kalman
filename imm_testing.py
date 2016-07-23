@@ -7,12 +7,12 @@ from models.dim_2.order_2 import State2Measurement1,\
     State2Measurement1PerfectTurn
 import numpy as np
 
-filter_models = [State2Measurement1(plant_noise=10**(-4 + 2 * i))
+filter_models = [State2Measurement1(plant_noise=10**(-4 + 3 * i))
                  for i in range(2)]
 
-filter_models += [State2Measurement1PerfectTurn(plant_noise=10**-3,
+filter_models += [State2Measurement1PerfectTurn(plant_noise=10**-2,
                                                 turn_rate=0.2),
-                  State2Measurement1PerfectTurn(plant_noise=10**-3,
+                  State2Measurement1PerfectTurn(plant_noise=10**-2,
                                                 turn_rate=-0.2)]
 
 switching_matrix = generate_switching_matrix(n=len(filter_models), diag=0.95)
@@ -23,8 +23,6 @@ imm2d = IMM(
     filter_models=filter_models,
     switching_matrix=switching_matrix
 )
-
-low_speed_2d = State2Measurement1(plant_noise=0.0)
 
 
 def generate_measurements(n):
@@ -43,11 +41,10 @@ def generate_measurements(n):
 
         yield z, R
 
-for z, R in generate_measurements(n=70):
-    for filter_2d in [low_speed_2d, imm2d]:
-        filter_2d.filter(dt=1.0, z=z, R=R)
+np.random.seed(42)
 
-low_speed_2d.plot('311')
-imm2d.plot('312')
-imm2d.plot_probabilities('313')
-State2Measurement1.show()
+for z, R in generate_measurements(n=70):
+    imm2d.filter(dt=1.0, z=z, R=R)
+
+imm2d.plot_all()
+imm2d.show()

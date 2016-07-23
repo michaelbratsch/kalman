@@ -2,6 +2,7 @@
 
 import logging
 
+from filter.plotter import plot_all
 from models.dim_2.order_2 import (State2Measurement1PerfectTurn,
                                   State2Measurement1TwistedTurn)
 import numpy as np
@@ -39,7 +40,6 @@ for _ in range(40):
                 np.diagonal(filter_2d.P))
         )
 
-perfect_turn2d.plot(121)
-twisted_turn2d.plot(122)
+plot_all(filters, vertical=False)
 
 State2Measurement1PerfectTurn.show()

@@ -2,6 +2,7 @@
 
 import math
 
+from filter.plotter import plot_all
 from models.dim_2.order_1 import State1Mearsurement1
 from models.dim_2.order_2 import State2Measurement1
 from models.dim_2.order_3 import State3Measurement1
@@ -36,13 +37,12 @@ def generate_measurements(n):
 
         yield z, R
 
+filters = [position2d, low_speed2d, acceleration2d, jerk2d]
+
 for z, R in generate_measurements(100):
-    for filter_2d in [position2d, low_speed2d, acceleration2d, jerk2d]:
+    for filter_2d in filters:
         filter_2d.filter(dt=1.0, z=z, R=R)
 
-position2d.plot(411)
-low_speed2d.plot(412)
-acceleration2d.plot(413)
-jerk2d.plot(414)
+plot_all(filters)
 
 State1Mearsurement1.show()
