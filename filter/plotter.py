@@ -68,14 +68,14 @@ class Plot2dMixin(object):
 
         return self.figure.add_subplot(subplot)
 
+    def get_title(self):
+        return (('%s PN: ' + self.plant_noise_format) %
+                (self.__class__.__name__, self.plant_noise))
+
     def plot(self, figure=None, subplot=111):
         axes = self.get_axes(figure, subplot)
 
-        if hasattr(self, 'plant_noise'):
-            axes.set_title(('%s PN: ' + self.plant_noise_format) %
-                           (self.__class__.__name__, self.plant_noise))
-        else:
-            axes.set_title(self.__class__.__name__)
+        axes.set_title(self.get_title())
 
         x, y = zip(*self.positions)
         axes.plot(x, y, marker='o')
@@ -118,6 +118,9 @@ class Plot2dIMMMixin(Plot2dMixin):
 
         self.probabilities = []
 
+    def get_title(self):
+        return self.__class__.__name__
+
     def update_plotter(self, measurement=None):
         super(Plot2dIMMMixin, self).update_plotter(
             measurement=measurement)
@@ -128,7 +131,7 @@ class Plot2dIMMMixin(Plot2dMixin):
     def plot_probabilities(self, figure=None, subplot=212):
         axes = self.get_axes(figure=figure, subplot=subplot)
 
-        axes.set_title('%s probabilities' % self.__class__.__name__)
+        axes.set_title('%s probabilities' % self.get_title())
 
         for prob, fm in zip(zip(*self.probabilities), self.filter_models):
             axes.plot(prob, label=('%s PN: ' + self.plant_noise_format) %
