@@ -47,23 +47,16 @@ class IMM(Plot2dMixin):
             fm.probability /= probability_sum
 
     def filter(self, dt, z, R):
-        if self.x is None:
-            for filter_model in self.filter_models:
-                filter_model.initialize_state(z, R)
+        if self.x is not None:
+            # the different Kalman filters are expected to be not initialized
+            self.state_interaction()
 
-            # ToDo: put it somewhere else
-            self.x = np.zeros(4)
-            self.x[0:2] = z
-            self.P = np.identity(4)
-            self.P[0:2, 0:2] = R
-        else:
-            self.state_interaction(dt)
-            self.model_probability_update(z, R)
-            self.state_combination()
+        self.update_models(dt, z, R)
+        self.state_combination()
 
         self.update_plotter(z)
 
-    def state_interaction(self, dt):
+    def state_interaction(self):
 
         def mix_states(conditional_model_probabilities):
             for proba_col in conditional_model_probabilities.T:
@@ -79,13 +72,12 @@ class IMM(Plot2dMixin):
                              for fm, proba in zip(self.filter_models,
                                                   proba_col))
 
-        def extrapolate_models(dt, states_mixed, covariances_mixed):
+        def copy_states_and_covs(states_mixed, covariances_mixed):
             for fm, state, covariance in zip(self.filter_models,
                                              states_mixed,
                                              covariances_mixed):
                 fm.x = state
                 fm.P = covariance
-                fm.extrapolate(dt)
 
         # scale rows by probability
         conditional_model_probabilities = np.array(np.stack(
@@ -102,13 +94,15 @@ class IMM(Plot2dMixin):
         covariances_mixed = mix_covariances(conditional_model_probabilities,
                                             states_mixed)
 
-        extrapolate_models(dt, states_mixed, covariances_mixed)
+        copy_states_and_covs(states_mixed, covariances_mixed)
 
-    def model_probability_update(self, z, R):
+    def update_models(self, dt, z, R):
 
         for fm in self.filter_models:
-            fm.update(z, R)
+            fm.filter(dt, z, R)
 
+        # the different filter have updated their probabilities which need to
+        # be rescaled
         self.rescale_filter_probabilities()
 
     def state_combination(self):
