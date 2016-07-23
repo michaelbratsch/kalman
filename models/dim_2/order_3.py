@@ -11,16 +11,6 @@ class State3Measurement1(Kalman, Plot2dMixin):
         self.P = np.identity(6)
         self.P[0:2, 0:2] = R
 
-    def get_position(self):
-        return self.x[0], self.x[1]
-
-    def get_position_accuracy(self):
-        return np.array([[self.P[0, 0], self.P[0, 1]],
-                         [self.P[1, 0], self.P[1, 1]]])
-
-    def get_speed(self):
-        return self.x[2], self.x[3]
-
     def F(self, dt):
         t_2 = 0.5 * dt**2
         return np.array([[1.0, 0.0, dt,  0.0, t_2, 0.0],

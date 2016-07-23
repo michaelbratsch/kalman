@@ -13,16 +13,6 @@ class State2Measurement1Base(Kalman, Plot2dMixin):
         self.P = np.identity(4)
         self.P[0:2, 0:2] = R
 
-    def get_position(self):
-        return self.x[0], self.x[1]
-
-    def get_position_accuracy(self):
-        return np.array([[self.P[0, 0], self.P[0, 1]],
-                         [self.P[1, 0], self.P[1, 1]]])
-
-    def get_speed(self):
-        return self.x[2], self.x[3]
-
     def H(self):
         return np.eye(N=2, M=4)
 

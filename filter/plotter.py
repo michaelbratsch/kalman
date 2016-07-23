@@ -33,6 +33,16 @@ class Plot2dMixin(object):
         self.measurements = []
         self.probabilities = []
 
+    def get_position(self):
+        return self.x[0], self.x[1]
+
+    def get_position_accuracy(self):
+        return np.array([[self.P[0, 0], self.P[0, 1]],
+                         [self.P[1, 0], self.P[1, 1]]])
+
+    def get_speed(self):
+        return self.x[2], self.x[3]
+
     def update_plotter(self, measurement=None):
         self.positions.append(self.get_position())
         self.position_accuracies.append(self.get_position_accuracy())

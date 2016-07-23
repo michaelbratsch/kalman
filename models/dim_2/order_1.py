@@ -9,13 +9,6 @@ class State1Mearsurement1(Kalman, Plot2dMixin):
         self.x = z
         self.P = R
 
-    def get_position(self):
-        return self.x[0], self.x[1]
-
-    def get_position_accuracy(self):
-        return np.array([[self.P[0, 0], self.P[0, 1]],
-                         [self.P[1, 0], self.P[1, 1]]])
-
     def get_speed(self):
         return None
 

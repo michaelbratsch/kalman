@@ -7,17 +7,15 @@ from models.dim_2.order_2 import State2Measurement1,\
     State2Measurement1PerfectTurn
 import numpy as np
 
-
-n_filters = 2
 filter_models = [State2Measurement1(plant_noise=10**(-4 + 2 * i))
-                 for i in range(n_filters)]
-filter_models.append(State2Measurement1PerfectTurn(plant_noise=10**-3,
-                                                   turn_rate=0.2))
-filter_models.append(State2Measurement1PerfectTurn(plant_noise=10**-3,
-                                                   turn_rate=-0.2))
-n_filters = len(filter_models)
+                 for i in range(2)]
 
-switching_matrix = generate_switching_matrix(n=n_filters, diag=0.95)
+filter_models += [State2Measurement1PerfectTurn(plant_noise=10**-3,
+                                                turn_rate=0.2),
+                  State2Measurement1PerfectTurn(plant_noise=10**-3,
+                                                turn_rate=-0.2)]
+
+switching_matrix = generate_switching_matrix(n=len(filter_models), diag=0.95)
 
 print "Switching matrix:\n", switching_matrix
 

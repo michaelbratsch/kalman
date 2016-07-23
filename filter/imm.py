@@ -7,9 +7,9 @@ def generate_switching_matrix(n, diag):
     if n > 1:
         switching_matrix = np.full((n, n), 0.05 / (n - 1))
         np.fill_diagonal(switching_matrix, diag)
-    else:
-        switching_matrix = np.eye(1)
-    return switching_matrix
+        return switching_matrix
+
+    return np.eye(1)
 
 
 class IMM(Plot2dMixin):
@@ -22,21 +22,11 @@ class IMM(Plot2dMixin):
         self.P = None
 
         self.filter_models = filter_models
-        self.n_filters = len(self.filter_models)
         self.rescale_filter_probabilities()
 
         self.switching_matrix = switching_matrix
-        assert self.switching_matrix.shape == (self.n_filters, self.n_filters)
-
-    def get_position(self):
-        return self.x[0], self.x[1]
-
-    def get_position_accuracy(self):
-        return np.array([[self.P[0, 0], self.P[0, 1]],
-                         [self.P[1, 0], self.P[1, 1]]])
-
-    def get_speed(self):
-        return self.x[2], self.x[3]
+        assert self.switching_matrix.shape == (len(self.filter_models),
+                                               len(self.filter_models))
 
     def rescale_filter_probabilities(self):
         probability_sum = sum(fm.probability
