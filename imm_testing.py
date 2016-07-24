@@ -3,12 +3,15 @@
 import math
 
 from filter.imm import IMM, generate_switching_matrix
+import matplotlib.pyplot as plt
 from models.dim_2.order_2 import State2Measurement1,\
     State2Measurement1PerfectTurn
 import numpy as np
 
-filter_models = [State2Measurement1(plant_noise=10**(-4 + 3 * i))
-                 for i in range(2)]
+
+filter_models = [State2Measurement1(plant_noise=10**(-4 + 3 * i),
+                                    probability_scaling=2.0)
+                 for i in range(1)]
 
 filter_models += [State2Measurement1PerfectTurn(plant_noise=10**-2,
                                                 turn_rate=0.2),
@@ -24,10 +27,11 @@ imm2d = IMM(
     switching_matrix=switching_matrix
 )
 
+speed_2d = State2Measurement1(plant_noise=10**-4)
+
 
 def generate_measurements(n):
     for i in range(1, n + 1):
-        # MEASUREMENT
         z = np.array([i, 0.0])
 
         s_xx_R = 0.7
@@ -45,6 +49,8 @@ np.random.seed(42)
 
 for z, R in generate_measurements(n=70):
     imm2d.filter(dt=1.0, z=z, R=R)
+    speed_2d.filter(dt=1.0, z=z, R=R)
 
 imm2d.plot_all()
+speed_2d.plot(figure=plt.figure())
 imm2d.show()

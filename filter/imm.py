@@ -5,7 +5,7 @@ import numpy as np
 
 def generate_switching_matrix(n, diag):
     if n > 1:
-        switching_matrix = np.full((n, n), 0.05 / (n - 1))
+        switching_matrix = np.full((n, n), (1.0 - diag) / (n - 1))
         np.fill_diagonal(switching_matrix, diag)
         return switching_matrix
 

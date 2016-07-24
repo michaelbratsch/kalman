@@ -6,7 +6,7 @@ import numpy as np
 
 class Kalman(object):
 
-    def __init__(self, plant_noise):
+    def __init__(self, plant_noise, probability_scaling=1.0):
         # needs to be called to make MixIns work
         super(Kalman, self).__init__()
 
@@ -16,6 +16,7 @@ class Kalman(object):
 
         # probability of the model, used especially for IMM
         self.probability = 1.0
+        self.probability_scaling = probability_scaling
 
         self.plant_noise = plant_noise
 
@@ -54,7 +55,7 @@ class Kalman(object):
         self.P = np.dot(
             np.identity(len(self.x)) - np.dot(KalmanGain, self.H()), self.P)
 
-        self.probability = (
+        self.probability = self.probability_scaling * (
             math.exp(-0.5 * np.dot(np.dot(ytilde, Sinv), ytilde.T)) /
             math.sqrt(np.linalg.det(2.0 * math.pi * S)))
 

@@ -12,13 +12,12 @@ import numpy as np
 
 plant_noise = 0.0
 
-position2d = State1Mearsurement1(plant_noise=plant_noise)
-
-low_speed2d = State2Measurement1(plant_noise=plant_noise)
-
-acceleration2d = State3Measurement1(plant_noise=plant_noise)
-
-jerk2d = State4Measurement1(plant_noise=plant_noise)
+filters = [
+    State1Mearsurement1(plant_noise=plant_noise),
+    State2Measurement1(plant_noise=plant_noise),
+    State3Measurement1(plant_noise=plant_noise),
+    State4Measurement1(plant_noise=plant_noise)
+]
 
 
 def generate_measurements(n):
@@ -36,8 +35,6 @@ def generate_measurements(n):
         z = np.random.multivariate_normal(mean=z, cov=R)
 
         yield z, R
-
-filters = [position2d, low_speed2d, acceleration2d, jerk2d]
 
 for z, R in generate_measurements(100):
     for filter_2d in filters:

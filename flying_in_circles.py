@@ -56,7 +56,7 @@ for z, R in generate_measurements(60):
 
 print "Condition numbers of covariances:"
 for f in filters:
-    print "%s: %.1e" % (f.__class__.__name__, np.linalg.cond(f.P))
+    print "%s: %.1e" % (f.get_title(), np.linalg.cond(f.P))
 
 plot_all(filters, vertical=False, dim=2)
 
