@@ -8,7 +8,7 @@ class DataGenerator(object):
 
         self.current_time = 0.0
 
-    def get_current_segment(self):
+    def get_value(self):
         position = None
         remaining_time = self.current_time
         # the different segments describing the movement are looped until
@@ -25,5 +25,5 @@ class DataGenerator(object):
 
     def draw(self, dt, R):
         self.current_time += dt
-        return np.random.multivariate_normal(mean=self.get_current_segment(),
+        return np.random.multivariate_normal(mean=self.get_value(),
                                              cov=R)

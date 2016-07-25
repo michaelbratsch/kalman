@@ -3,7 +3,7 @@
 import math
 
 from data.measurement import DataGenerator
-from data.segments import Steady
+from data.segments import Steady, Turn
 from filter.imm import IMM, generate_switching_matrix
 import matplotlib.pyplot as plt
 from models.dim_2.order_2 import State2Measurement1,\
@@ -31,37 +31,42 @@ imm2d = IMM(
 
 speed_2d = State2Measurement1(plant_noise=10**-4)
 
-s_xx_R = 0.7
-s_yy_R = 0.7
+s_xx_R = 0.5
+s_yy_R = 0.5
 s_xy_R = -0.0 * math.sqrt(s_xx_R * s_yy_R)
 
 R = np.array([[s_xx_R, s_xy_R],
               [s_xy_R, s_xx_R]])
 
 measurement = DataGenerator(
-    segments=[Steady(duration=25.0,
-                     speed=np.array([1.0, 0.0]),
+    segments=[Steady(duration=40.0,
+                     abs_speed=1.0,
+                     heading=0.5 * math.pi,
                      acceleration=np.array([0.0, 0.0])),
-              Steady(duration=25.0,
-                     speed=np.array([0.0, 1.0]),
+              Turn(duration=math.pi / 0.2,
+                   abs_speed=1.0,
+                   heading=0.5 * math.pi,
+                   turnrate=0.2),
+              Steady(duration=40.0,
+                     abs_speed=1.0,
+                     heading=1.5 * math.pi,
                      acceleration=np.array([0.0, 0.0])),
-              Steady(duration=25.0,
-                     speed=np.array([1.0, 0.0]),
-                     acceleration=np.array([0.0, 0.0])),
-              Steady(duration=25.0,
-                     speed=np.array([0.0, -1.0]),
-                     acceleration=np.array([0.0, 0.0]))]
+              Turn(duration=math.pi / 0.2,
+                   abs_speed=1.0,
+                   heading=1.5 * math.pi,
+                   turnrate=-0.2)]
 )
 
 
 np.random.seed(42)
+dt = 1.0
 
-for _ in range(400):
-    z = measurement.draw(dt=1.0, R=R)
-    imm2d.filter(dt=1.0, z=z, R=R)
-    speed_2d.filter(dt=1.0, z=z, R=R)
+for _ in range(140):
+    z = measurement.draw(dt=dt, R=R)
+    imm2d.filter(dt=dt, z=z, R=R)
+    speed_2d.filter(dt=dt, z=z, R=R)
 
 
-imm2d.plot_all()
+imm2d.plot_all(vertical=False, dim=2)
 speed_2d.plot(figure=plt.figure())
 imm2d.show()
