@@ -31,8 +31,8 @@ R = np.array([[s_xx_R, s_xy_R],
 
 measurement = DataGenerator(
     segments=[Steady(duration=100.0,
-                     speed=np.array([1.0, 0.0]),
-                     acceleration=np.array([0.0, 0.0]))]
+                     heading=0.5 * math.pi,
+                     abs_speed=1.0)]
 )
 
 for _ in range(100):

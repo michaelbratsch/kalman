@@ -20,7 +20,7 @@ def create_ellipse(pos, cov):
                    color='green', fill=False)
 
 
-def plot_all(filter_models, vertical=True, dim=1):
+def plot_all(filter_models, vertical=True, dim=1, figure=None):
     items_per_dim = int(math.ceil(len(filter_models) / float(dim)))
 
     for i, fm in enumerate(filter_models):
@@ -29,7 +29,7 @@ def plot_all(filter_models, vertical=True, dim=1):
         else:
             pattern = '%s%s%s' % (dim, items_per_dim, i + 1)
 
-        fm.plot(subplot=pattern)
+        fm.plot(subplot=pattern, figure=figure)
 
 
 class Plot2dMixin(object):

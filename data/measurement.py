@@ -1,3 +1,5 @@
+from itertools import cycle
+
 import numpy as np
 
 
@@ -10,18 +12,21 @@ class DataGenerator(object):
 
     def get_value(self):
         position = None
+        heading = None
         remaining_time = self.current_time
         # the different segments describing the movement are looped until
         # remaining time is smaller then the duration of the current segment
-        while True:
-            for segment in self.segments:
-                if remaining_time > segment.duration:
-                    remaining_time -= segment.duration
-                    position = segment.get_value(t=segment.duration,
-                                                 position=position)
-                else:
-                    return segment.get_value(t=remaining_time,
-                                             position=position)
+        for segment in cycle(self.segments):
+            if remaining_time > segment.duration:
+                remaining_time -= segment.duration
+                position, heading = segment.get_value(t=segment.duration,
+                                                      position=position,
+                                                      heading=heading)
+            else:
+                position, _ = segment.get_value(t=remaining_time,
+                                                position=position,
+                                                heading=heading)
+                return position
 
     def draw(self, dt, R):
         self.current_time += dt
