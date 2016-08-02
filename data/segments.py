@@ -2,7 +2,23 @@ import math
 import numpy as np
 
 
-class Steady(object):
+class SegmentMixin(object):
+
+    def get_position_and_heading(self, position, heading):
+        if position is None:
+            position = np.zeros(2)
+
+        if self.heading is None and heading is None:
+            heading_used = 0.0
+        elif self.heading is None:
+            heading_used = heading
+        else:
+            heading_used = self.heading
+
+        return position, heading_used
+
+
+class Steady(SegmentMixin):
 
     def __init__(self, duration, abs_speed, acceleration=None, heading=None):
         self.duration = duration
@@ -15,24 +31,16 @@ class Steady(object):
             self.acceleration = acceleration
 
     def get_value(self, t, position, heading):
-        if position is None:
-            position = np.zeros(2)
+        position, heading = self.get_position_and_heading(position, heading)
 
-        if self.heading is None and heading is None:
-            heading_used = 0.0
-        elif self.heading is None:
-            heading_used = heading
-        else:
-            heading_used = self.heading
-
-        self.speed = np.array([self.abs_speed * math.sin(heading_used),
-                               self.abs_speed * math.cos(heading_used)])
+        self.speed = np.array([self.abs_speed * math.sin(heading),
+                               self.abs_speed * math.cos(heading)])
 
         return (0.5 * t**2 * self.acceleration + self.speed * t + position,
-                heading_used)
+                heading)
 
 
-class Turn(object):
+class Turn(SegmentMixin):
 
     def __init__(self, duration, abs_speed, turnrate, heading=None):
         self.duration = duration
@@ -43,22 +51,14 @@ class Turn(object):
         self.turnrate = turnrate
 
     def get_value(self, t, position, heading):
-        if position is None:
-            position = np.zeros(2)
+        position, heading = self.get_position_and_heading(position, heading)
 
-        if self.heading is None and heading is None:
-            heading_used = 0.0
-        elif self.heading is None:
-            heading_used = heading
-        else:
-            heading_used = self.heading
-
-        self.x = -math.cos(heading_used)
-        self.y = math.sin(heading_used)
+        self.x = -math.cos(heading)
+        self.y = math.sin(heading)
 
         rad_covered = t * self.turnrate
-        rad_shifted = rad_covered - 0.5 * math.pi + heading_used
+        rad_shifted = rad_covered - 0.5 * math.pi + heading
         x = self.radius * (math.sin(rad_shifted) - self.x)
         y = self.radius * (math.cos(rad_shifted) - self.y)
 
-        return position + np.array([x, y]), rad_covered + heading_used
+        return (position + np.array([x, y]), rad_covered + heading)

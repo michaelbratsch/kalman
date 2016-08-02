@@ -1,4 +1,5 @@
 
+from filter.kalman import gaussian_density
 from filter.plotter import Plot2dIMMMixin
 import numpy as np
 

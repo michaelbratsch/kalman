@@ -14,6 +14,7 @@ class DataGenerator(object):
         position = None
         heading = None
         remaining_time = self.current_time
+
         # the different segments describing the movement are looped until
         # remaining time is smaller then the duration of the current segment
         for segment in cycle(self.segments):

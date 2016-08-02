@@ -4,6 +4,11 @@ import math
 import numpy as np
 
 
+def gaussian_density(x, S, Sinv):
+    return (math.exp(-0.5 * np.dot(np.dot(x, Sinv), x.T)) /
+            math.sqrt(np.linalg.det(2.0 * math.pi * S)))
+
+
 class Kalman(object):
 
     def __init__(self, plant_noise, probability_scaling=1.0):
@@ -55,9 +60,8 @@ class Kalman(object):
         self.P = np.dot(
             np.identity(len(self.x)) - np.dot(KalmanGain, self.H()), self.P)
 
-        self.probability = self.probability_scaling * (
-            math.exp(-0.5 * np.dot(np.dot(ytilde, Sinv), ytilde.T)) /
-            math.sqrt(np.linalg.det(2.0 * math.pi * S)))
+        self.probability = self.probability_scaling * gaussian_density(
+            x=ytilde, S=S, Sinv=Sinv)
 
     def _filter(self, dt, z, R):
         self.extrapolate(dt)
