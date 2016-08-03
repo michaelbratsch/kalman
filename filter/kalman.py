@@ -10,8 +10,13 @@ def gaussian_density(x, S, Sinv):
 
 
 class Kalman(object):
+    """
+        plant_noise:     noise that is not covered by the defined model
+        density_scaling: scale the computed density for an innovation;
+                         necessary for probabilities used by IMM
+    """
 
-    def __init__(self, plant_noise, probability_scaling=1.0):
+    def __init__(self, plant_noise, density_scaling=1.0):
         # needs to be called to make MixIns work
         super(Kalman, self).__init__()
 
@@ -19,11 +24,13 @@ class Kalman(object):
         self.x = None
         self.P = None
 
-        # probability of the model, used especially for IMM
-        self.probability = 1.0
-        self.probability_scaling = probability_scaling
-
         self.plant_noise = plant_noise
+
+        # density of the model, used for IMM-PDA
+        self.density = 1.0
+        self.density_scaling = density_scaling
+
+        self.false_density = 0.0
 
         self.log = logging.getLogger(self.__class__.__name__)
 
@@ -54,14 +61,22 @@ class Kalman(object):
         S = np.dot(np.dot(self.H(), self.P), self.H().T) + R
         Sinv = np.linalg.inv(S)
 
+        # compute density function for the innovation
+        self.density = self.density_scaling * gaussian_density(
+            x=ytilde, S=S, Sinv=Sinv)
+
+        # if false density is zero, the scaling does not change the innovation
+        ytilde *= self.density
+
+        sum_densities = self.density + self.false_density
+        if sum_densities:
+            ytilde /= sum_densities
+
         # update
         KalmanGain = np.dot(np.dot(self.P, self.H().T), Sinv)
         self.x = self.x + np.dot(KalmanGain, ytilde)
         self.P = np.dot(
             np.identity(len(self.x)) - np.dot(KalmanGain, self.H()), self.P)
-
-        self.probability = self.probability_scaling * gaussian_density(
-            x=ytilde, S=S, Sinv=Sinv)
 
     def _filter(self, dt, z, R):
         self.extrapolate(dt)

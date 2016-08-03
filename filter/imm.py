@@ -15,7 +15,9 @@ def generate_switching_matrix(n, diag):
 
 class IMM(Plot2dIMMMixin):
 
-    def __init__(self, filter_models, switching_matrix):
+    def __init__(self, filter_models, switching_matrix,
+                 false_density_to_accuracy=5.0):
+
         super(IMM, self).__init__()
 
         # will be initialized on first measurement
@@ -23,29 +25,32 @@ class IMM(Plot2dIMMMixin):
         self.P = None
 
         self.filter_models = filter_models
-        self.rescale_filter_probabilities()
+
+        self.false_density = 0.0
+        self.false_density_to_accuracy = false_density_to_accuracy
+
+        # the density of the different filters can not be rescaled
+        # because the original value is needed for the Kalman filter
+        self.sum_densities = sum(
+            fm.density for fm in self.filter_models)
 
         self.switching_matrix = switching_matrix
         assert self.switching_matrix.shape == (len(self.filter_models),
                                                len(self.filter_models))
 
-    def rescale_filter_probabilities(self):
-        probability_sum = sum(fm.probability
-                              for fm in self.filter_models)
-
-        # re-scale probability of different filters
-        for fm in self.filter_models:
-            fm.probability /= probability_sum
-
     def filter(self, dt, z, R):
-        if self.x is not None:
+        if self.x is not None and self.sum_densities:
             # the different Kalman filters are expected to be not initialized
+            # so no state interaction can be performed
             self.state_interaction()
 
         self.update_models(dt, z, R)
-        self.state_combination()
 
-        self.update_plotter(z)
+        if self.sum_densities:
+            self.state_combination()
+
+        if self.sum_densities > 1e-3 * self.false_density:
+            self.update_plotter(z)
 
     def state_interaction(self):
 
@@ -72,7 +77,7 @@ class IMM(Plot2dIMMMixin):
 
         # scale rows by probability
         conditional_model_probabilities = np.array(np.stack(
-            row * fm.probability
+            row * fm.density / self.sum_densities
             for row, fm in zip(self.switching_matrix, self.filter_models)
         ))
         # re-scale columns to sum 1
@@ -87,21 +92,33 @@ class IMM(Plot2dIMMMixin):
 
         copy_states_and_covs(states_mixed, covariances_mixed)
 
+    def set_false_density(self, R):
+        Rinv = np.linalg.inv(R)
+
+        x = np.ones(R.shape[0])
+        x *= self.false_density_to_accuracy / np.linalg.norm(x)
+        self.false_density = gaussian_density(x, R, Rinv)
+
+        for fm in self.filter_models:
+            fm.false_density = self.false_density
+
     def update_models(self, dt, z, R):
+
+        self.set_false_density(R)
 
         for fm in self.filter_models:
             fm.filter(dt, z, R)
 
-        # the different filter have updated their probabilities which need to
-        # be rescaled
-        self.rescale_filter_probabilities()
+        self.sum_densities = sum(
+            fm.density for fm in self.filter_models)
 
     def state_combination(self):
 
-        self.x = np.sum(fm.probability * fm.x
+        self.x = np.sum(fm.density * fm.x / self.sum_densities
                         for fm in self.filter_models)
 
         self.P = np.sum(
-            fm.probability * (fm.P + np.outer(fm.x - self.x, fm.x - self.x))
+            fm.density / self.sum_densities *
+            (fm.P + np.outer(fm.x - self.x, fm.x - self.x))
             for fm in self.filter_models
         )

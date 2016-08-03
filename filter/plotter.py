@@ -117,6 +117,7 @@ class Plot2dIMMMixin(Plot2dMixin):
         super(Plot2dIMMMixin, self).__init__()
 
         self.probabilities = []
+        self.false_densities = []
 
     def get_title(self):
         return self.__class__.__name__
@@ -125,8 +126,12 @@ class Plot2dIMMMixin(Plot2dMixin):
         super(Plot2dIMMMixin, self).update_plotter(
             measurement=measurement)
 
+        density_sum = self.sum_densities + self.false_density
+
         self.probabilities.append(
-            [fm.probability for fm in self.filter_models])
+            [fm.density / density_sum for fm in self.filter_models])
+
+        self.false_densities.append(self.false_density / density_sum)
 
     def plot_probabilities(self, figure=None, subplot=212):
         axes = self.get_axes(figure=figure, subplot=subplot)
@@ -136,6 +141,9 @@ class Plot2dIMMMixin(Plot2dMixin):
         for prob, fm in zip(zip(*self.probabilities), self.filter_models):
             axes.plot(prob, label=('%s PN: ' + self.plant_noise_format) %
                       (fm.__class__.__name__, fm.plant_noise))
+
+        axes.plot(self.false_densities, label='False density')
+
         axes.legend()
 
     def plot_all(self, vertical=True, dim=1):
