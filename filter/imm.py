@@ -29,6 +29,8 @@ class IMM(Plot2dIMMMixin):
         self.false_density = 0.0
         self.false_density_to_accuracy = false_density_to_accuracy
 
+        self.density_scalings = np.ones(len(self.filter_models))
+
         # the density of the different filters can not be rescaled
         # because the original value is needed for the Kalman filter
         self.sum_densities = sum(
@@ -80,6 +82,10 @@ class IMM(Plot2dIMMMixin):
             row * fm.density / self.sum_densities
             for row, fm in zip(self.switching_matrix, self.filter_models)
         ))
+
+        self.density_scalings = [np.sum(col)
+                                 for col in conditional_model_probabilities.T]
+
         # re-scale columns to sum 1
         conditional_model_probabilities = np.array(np.column_stack(
             col / np.sum(col) for col in conditional_model_probabilities.T
@@ -106,9 +112,14 @@ class IMM(Plot2dIMMMixin):
 
         self.set_false_density(R)
 
-        for fm in self.filter_models:
+        for fm, density_scaling in zip(self.filter_models,
+                                       self.density_scalings):
             fm.filter(dt, z, R)
+            fm.density *= density_scaling
 
+        # The densities are not rescaled to obtain probabilities because
+        # for the Kalman filter they need to be rescaled respective to the
+        # false density.
         self.sum_densities = sum(
             fm.density for fm in self.filter_models)
 

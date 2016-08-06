@@ -4,23 +4,23 @@ import math
 
 from data.measurement import DataGenerator
 from data.segments import Steady, Turn
-from filter.imm import IMM, generate_switching_matrix
+from filter.imm import IMM
 from models.dim_2.order_2 import State2Measurement1,\
     State2Measurement1PerfectTurn
 import numpy as np
 
 
 filter_models = [
-    State2Measurement1(plant_noise=10**-4,
-                       density_scaling=2.5),
-    #    State2Measurement1(plant_noise=10**-1),
-    State2Measurement1PerfectTurn(plant_noise=10**-4,
+    State2Measurement1(plant_noise=0.0),
+    State2Measurement1PerfectTurn(plant_noise=0.0,
                                   turn_rate=0.2),
-    State2Measurement1PerfectTurn(plant_noise=10**-4,
+    State2Measurement1PerfectTurn(plant_noise=0.0,
                                   turn_rate=-0.2)]
 
 
-switching_matrix = generate_switching_matrix(n=len(filter_models), diag=0.95)
+switching_matrix = np.array([[0.90, 0.05, 0.05],
+                             [0.20, 0.80, 0.00],
+                             [0.20, 0.00, 0.80]])
 
 print "Switching matrix:\n", switching_matrix
 
@@ -38,25 +38,26 @@ R = np.array([[s_xx_R, s_xy_R],
               [s_xy_R, s_yy_R]])
 
 measurement = DataGenerator(
-    segments=[Steady(duration=40.0,
-                     heading=0.5 * math.pi,
-                     abs_speed=1.0),
-              Turn(duration=15.0,
-                   abs_speed=1.0,
-                   turnrate=0.2),
-              Turn(duration=15.0,
-                   abs_speed=1.0,
-                   turnrate=-0.2)]
+    segments=[
+        Steady(duration=40.0,
+               heading=0.5 * math.pi,
+               abs_speed=1.0),
+        Turn(duration=15.0,
+             abs_speed=1.0,
+             turnrate=0.2),
+        Turn(duration=15.0,
+             abs_speed=1.0,
+             turnrate=-0.2)
+    ]
 )
 
 
 np.random.seed(42)
-dt = 2.0
+dt = 1.0
 
-for _ in range(100):
+for _ in range(200):
     z = measurement.draw(dt=dt, R=R)
     imm2d.filter(dt=dt, z=z, R=R)
-    imm2d.filter(dt=0.001, z=z + np.array([-8.0, -8.0]), R=R)
 
 imm2d.plot_all(vertical=False, dim=2)
 imm2d.show()

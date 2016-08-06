@@ -12,7 +12,7 @@ def gaussian_density(x, S, Sinv):
 class Kalman(object):
     """
         plant_noise:     noise that is not covered by the defined model
-        density_scaling: scale the computed density for an innovation;
+        density_scalings: scale the computed density for an innovation;
                          necessary for probabilities used by IMM
     """
 
@@ -28,7 +28,7 @@ class Kalman(object):
 
         # density of the model, used for IMM-PDA
         self.density = 1.0
-        self.density_scaling = density_scaling
+        self.density_scalings = density_scaling
 
         self.false_density = 0.0
 
@@ -62,7 +62,7 @@ class Kalman(object):
         Sinv = np.linalg.inv(S)
 
         # compute density function for the innovation
-        self.density = self.density_scaling * gaussian_density(
+        self.density = self.density_scalings * gaussian_density(
             x=ytilde, S=S, Sinv=Sinv)
 
         # if false density is zero, the scaling does not change the innovation
