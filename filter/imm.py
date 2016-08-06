@@ -41,17 +41,20 @@ class IMM(Plot2dIMMMixin):
                                                len(self.filter_models))
 
     def filter(self, dt, z, R):
-        if self.x is not None and self.sum_densities:
+        def false_density_not_dominating():
+            return self.sum_densities > 1e-4 * self.false_density
+
+        if self.x is not None and false_density_not_dominating():
             # the different Kalman filters are expected to be not initialized
             # so no state interaction can be performed
             self.state_interaction()
 
         self.update_models(dt, z, R)
 
-        if self.sum_densities:
+        if false_density_not_dominating():
             self.state_combination()
 
-        if self.sum_densities > 1e-3 * self.false_density:
+        if false_density_not_dominating():
             self.update_plotter(z)
 
     def state_interaction(self):
@@ -88,7 +91,10 @@ class IMM(Plot2dIMMMixin):
 
         # re-scale columns to sum 1
         conditional_model_probabilities = np.array(np.column_stack(
-            col / np.sum(col) for col in conditional_model_probabilities.T
+            col / density_scaling
+            for col, density_scaling in zip(conditional_model_probabilities.T,
+                                            self.density_scalings)
+            if density_scaling != 0.0
         ))
 
         states_mixed = list(mix_states(conditional_model_probabilities))
@@ -101,8 +107,7 @@ class IMM(Plot2dIMMMixin):
     def set_false_density(self, R):
         Rinv = np.linalg.inv(R)
 
-        x = np.ones(R.shape[0])
-        x *= self.false_density_to_accuracy / np.linalg.norm(x)
+        x = self.false_density_to_accuracy * np.ones(R.shape[0])
         self.false_density = gaussian_density(x, R, Rinv)
 
         for fm in self.filter_models:
