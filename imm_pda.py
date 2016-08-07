@@ -8,7 +8,7 @@ from filter.imm import IMM
 from models.dim_2.order_2 import State2Measurement1,\
     State2Measurement1PerfectTurn
 import numpy as np
-from tracker.tracker import Tracker
+from tracking.tracker import Tracker
 
 
 def filter_factory():
