@@ -137,6 +137,7 @@ class Plot2dIMMMixin(Plot2dMixin):
         axes = self.get_axes(figure=figure, subplot=subplot)
 
         axes.set_title('%s probabilities' % self.get_title())
+        axes.set_ylim((0.0, 1.0))
 
         for prob, fm in zip(zip(*self.probabilities), self.filter_models):
             axes.plot(prob, label=('%s PN: ' + self.plant_noise_format) %
